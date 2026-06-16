@@ -43,21 +43,37 @@ Perfect for developers, remote workers, SaaS presenters, content creators, and s
 
 ### Custom Selectors & Balances Blurred
 
-Below is the extension active on our custom dark-mode financial sandbox, blurring all critical numbers:
+Below is the extension active on our custom dark-mode financial sandbox:
 
-![Dashboard Selectors Blurred](test_artifacts/5_dashboard_custom_selectors_blurred.png)
 
-### Visual Selector (Inspect Mode)
+<img width="1280" height="800" alt="Without Blur" src="https://github.com/user-attachments/assets/46a83986-7e97-4ae1-90dd-dbd260328556" />
 
-Hovering over elements highlights them with a neon cyan overlay and previews their CSS selector path before clicking:
-
-![Visual selector highlight](test_artifacts/9_hover_element_highlighted.png)
 
 ### Extension Control Popup
 
 Adjust settings, add/remove selectors, and inspect the page directly from the extension popup interface:
 
-![Popup Settings UI](test_artifacts/4_popup_selectors_added.png)
+
+<img width="1280" height="800" alt="Sheild Managment" src="https://github.com/user-attachments/assets/98670bd3-8f58-47cf-a545-0f5dd0e9f16b" />
+
+
+### Visual Selector (Inspect Mode)
+
+Hovering over elements highlights them with a neon cyan overlay and previews their CSS selector path before clicking:
+
+
+<img width="1280" height="800" alt="CSS Selector" src="https://github.com/user-attachments/assets/b33b7a15-2f47-47b1-9362-4465b4365565" />
+
+
+### Blurred Content
+
+The content is blurred to conceal related information. Selected selectors are added to the list and are saved permanently until removed:
+
+
+<img width="1280" height="800" alt="Selection Blurred 2" src="https://github.com/user-attachments/assets/0b42adb2-3510-439d-bad6-5a7e08e1ed95" />
+
+
+
 
 ---
 
