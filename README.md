@@ -70,6 +70,8 @@ Hovering over elements highlights them with a neon cyan overlay and previews the
 The content is blurred to conceal related information. Selected selectors are added to the list and are saved permanently until removed:
 
 
+<img width="1280" height="800" alt="Selection Blurred 1" src="https://github.com/user-attachments/assets/3de71806-ee49-4639-9940-22976b0fd46c" />
+
 <img width="1280" height="800" alt="Selection Blurred 2" src="https://github.com/user-attachments/assets/0b42adb2-3510-439d-bad6-5a7e08e1ed95" />
 
 
