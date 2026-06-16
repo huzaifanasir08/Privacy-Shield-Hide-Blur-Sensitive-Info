@@ -1,0 +1,113 @@
+/* Privacy Shield Injected CSS */
+
+:root {
+  --privacy-shield-blur-level: 8px;
+  --privacy-shield-reveal-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base class for blurred amounts and balances */
+.privacy-shield-blur {
+  filter: blur(var(--privacy-shield-blur-level)) !important;
+  user-select: none !important;
+  transition: filter var(--privacy-shield-reveal-transition) !important;
+  display: inline-block;
+  line-height: inherit;
+}
+
+/* Temporary reveal on hover when enabled */
+html.privacy-shield-hover-reveal .privacy-shield-blur:hover {
+  filter: blur(0px) !important;
+  cursor: pointer;
+}
+
+/* Global bypass toggle (turned off) */
+html.privacy-shield-disabled .privacy-shield-blur {
+  filter: none !important;
+  user-select: auto !important;
+}
+
+/* Special styles for element nodes targetted by selectors to prevent any visual layout shift */
+.privacy-shield-selector-blur {
+  filter: blur(var(--privacy-shield-blur-level)) !important;
+  user-select: none !important;
+  transition: filter var(--privacy-shield-reveal-transition) !important;
+}
+
+html.privacy-shield-hover-reveal .privacy-shield-selector-blur:hover {
+  filter: blur(0px) !important;
+}
+
+html.privacy-shield-disabled .privacy-shield-selector-blur {
+  filter: none !important;
+  user-select: auto !important;
+}
+
+/* Visual Element Inspector Mode Overlay */
+#privacy-shield-inspect-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none; /* Crucial: clicks/mouse movements pass through to underlying DOM elements */
+  z-index: 2147483647; /* Max z-index to overlay on top of any page element */
+  border: 2px solid #14b8a6;
+  background-color: rgba(20, 184, 166, 0.12);
+  box-shadow: 0 0 8px rgba(20, 184, 166, 0.4);
+  transition: top 0.08s ease-out, left 0.08s ease-out, width 0.08s ease-out, height 0.08s ease-out; /* Smooth slide highlight transition */
+  box-sizing: border-box;
+}
+
+/* Inspector Selector Tooltip */
+#privacy-shield-inspect-tooltip {
+  position: absolute;
+  background-color: #0f172a;
+  color: #14b8a6;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  z-index: 2147483647;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  box-sizing: border-box;
+  transform: translateY(8px);
+}
+
+/* Toast Notifications */
+.privacy-shield-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background-color: #0f172a;
+  color: #fff;
+  border-left: 4px solid #14b8a6;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.privacy-shield-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.privacy-shield-toast-icon {
+  color: #14b8a6;
+  display: flex;
+  align-items: center;
+}
+

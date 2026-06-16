@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aura Finance | Professional Developer Sandbox Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #030712;
+      --bg-surface: #0b0f19;
+      --bg-card: rgba(17, 24, 39, 0.65);
+      --border-color: rgba(255, 255, 255, 0.07);
+      --border-accent: rgba(14, 165, 233, 0.2);
+      --text-primary: #f9fafb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --color-sky: #0ea5e9;
+      --color-emerald: #10b981;
+      --color-indigo: #6366f1;
+      --color-rose: #f43f5e;
+      --color-violet: #8b5cf6;
+      --font-sans: 'Inter', sans-serif;
+      --font-display: 'Outfit', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden;
+    }
+
+    /* Background glow decorations */
+    .glow-bg {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, rgba(3, 7, 18, 0) 70%);
+      border-radius: 50%;
+      top: -100px;
+      right: -100px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .glow-bg-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, rgba(3, 7, 18, 0) 70%);
+      border-radius: 50%;
+      bottom: -150px;
+      left: -150px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Layout structure */
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--color-sky), var(--color-violet));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    }
+
+    .brand-name {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(to right, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item.active a {
+      background-color: rgba(255, 255, 255, 0.04);
+      color: var(--text-primary);
+      border-left: 3px solid var(--color-sky);
+      padding-left: 13px;
+    }
+
+    .nav-item a:hover {
+      background-color: rgba(255, 255, 255, 0.02);
+      color: var(--text-primary);
+      transform: translateX(4px);
+    }
+
+    .main-content {
+      flex-grow: 1;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: calc(100% - 260px);
+      z-index: 1;
+      position: relative;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-emerald);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--color-emerald);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--color-emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+        box-shadow: 0 0 12px var(--color-emerald);
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.5;
+      }
+    }
+
+    /* Grid layout */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .card-stat {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-stat:hover {
+      transform: translateY(-4px);
+      border-color: rgba(14, 165, 233, 0.3);
+      box-shadow: 0 12px 20px -8px rgba(14, 165, 233, 0.2);
+    }
+
+    .card-stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.75px;
+    }
+
+    .card-value {
+      font-family: var(--font-display);
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .trend-up {
+      color: var(--color-emerald);
+      font-weight: 600;
+    }
+
+    .trend-neutral {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* SVG Sparkline Spark styles */
+    .sparkline-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 45px;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .sparkline {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Main Section Rows styling */
+    .dashboard-body {
+      display: grid;
+      grid-template-columns: 1.8fr 1.2fr;
+      gap: 28px;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-title-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Transaction Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      border-bottom: 1px solid var(--border-color);
+      padding: 14px 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      padding: 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: background-color 0.2s ease;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.015);
+      color: var(--text-primary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .amount-text {
+      font-weight: 600;
+      font-family: var(--font-mono);
+      text-align: right;
+      color: var(--text-primary);
+    }
+
+    .ref-code {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .badge-completed {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--color-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Sandbox Panel right col */
+    .sandbox-sec {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .sandbox-header-glow {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sandbox-icon {
+      color: var(--color-sky);
+      font-size: 18px;
+    }
+
+    .sandbox-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-sky);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      width: 100%;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      background-color: rgba(3, 7, 18, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--color-sky);
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
+    }
+
+    /* Simulator Actions Button row */
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--color-sky), #0284c7);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #0ea5e9, #0369a1);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(14, 165, 233, 0.25);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      box-shadow: none;
+    }
+
+    button.secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    /* Credentials Display card */
+    .credential-card {
+      background: rgba(244, 63, 94, 0.02);
+      border: 1px solid rgba(244, 63, 94, 0.12);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .credential-header {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-rose);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .credential-item {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 8px 12px;
+      background: rgba(3, 7, 18, 0.4);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      color: #e2e8f0;
+      margin-bottom: 8px;
+      word-break: break-all;
+    }
+
+    .credential-item span {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Radial background ambient glows -->
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
+
+  <!-- Sidebar Component -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🛡️</div>
+      <div class="brand-name">Aura Portal</div>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item active">
+        <a href="#overview">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z">
+            </path>
+          </svg>
+          Overview
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#transactions">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+            </path>
+          </svg>
+          Transactions
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#credentials">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M15 7a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2h8zM12 12a1 1 0 100-2 1 1 0 000 2zM9 15h6">
+            </path>
+          </svg>
+          Credentials
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#settings">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+            </path>
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          Settings
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Container -->
+  <main class="main-content">
+    <header>
+      <div>
+        <h1>Financial Command Center</h1>
+        <p class="tagline">Real-time balances & secure developer sandbox.</p>
+      </div>
+      <div>
+        <div class="system-status">
+          <div class="status-dot"></div>
+          🛡️ SECURED PANEL
+        </div>
+      </div>
+    </header>
+
+    <!-- Custom Selectors Cards Row -->
+    <div class="grid-3">
+      <!-- Total Received Card -->
+      <div class="card-stat">
+        <div class="card-stat-header">
+          <div class="card-title">Total Received</div>
+          <svg width="16" height="16" fill="none" stroke="var(--color-emerald)" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+          </svg>
+        </div>
+        <div class="card-value" data-testid="text-total-received">$ 24,768.28</div>
+        <div class="card-footer">
+          <span class="trend-up">↑ 12.4%</span> vs last month
+        </div>
+        <!-- SVG Sparkline Background -->
+        <div class="sparkline-container">
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-green" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-emerald)" stop-opacity="0.18"></stop>
+                <stop offset="100%" stop-color="var(--color-emerald)" stop-opacity="0.0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M0 25 C15 18, 30 22, 45 10 C60 20, 75 14, 90 2 C95 1, 100 3, 100 3 L100 30 L0 30 Z"
+              fill="url(#grad-green)"></path>
+            <path d="M0 25 C15 18, 30 22, 45 10 C60 20, 75 14, 90 2 C95 1, 100 3, 100 3" fill="none"
+              stroke="var(--color-emerald)" stroke-width="1.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Hours Paid Card -->
+      <div class="card-stat">
+        <div class="card-stat-header">
+          <div class="card-title">Hours Tracked</div>
+          <svg width="16" height="16" fill="none" stroke="var(--color-sky)" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="card-value" data-testid="text-total-hours">847.1h</div>
+        <div class="card-footer">
+          <span class="trend-up">↑ 3.2%</span> vs last week
+        </div>
+        <!-- SVG Sparkline Background -->
+        <div class="sparkline-container">
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-sky)" stop-opacity="0.18"></stop>
+                <stop offset="100%" stop-color="var(--color-sky)" stop-opacity="0.0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M0 20 C15 22, 30 15, 45 18 C60 12, 75 5, 90 8 C95 9, 100 4, 100 4 L100 30 L0 30 Z"
+              fill="url(#grad-sky)"></path>
+            <path d="M0 20 C15 22, 30 15, 45 18 C60 12, 75 5, 90 8 C95 9, 100 4, 100 4" fill="none"
+              stroke="var(--color-sky)" stroke-width="1.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Payments Card -->
+      <div class="card-stat">
+        <div class="card-stat-header">
+          <div class="card-title">Completed Settlements</div>
+          <svg width="16" height="16" fill="none" stroke="var(--color-violet)" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div class="card-value" data-testid="text-payment-count">6</div>
+        <div class="card-footer">
+          <span class="trend-neutral">Stable</span> billing status
+        </div>
+        <!-- SVG Sparkline Background -->
+        <div class="sparkline-container">
+          <svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="grad-violet" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-violet)" stop-opacity="0.18"></stop>
+                <stop offset="100%" stop-color="var(--color-violet)" stop-opacity="0.0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M0 15 C15 15, 30 15, 45 15 C60 15, 75 15, 90 15 C95 15, 100 15, 100 15 L100 30 L0 30 Z"
+              fill="url(#grad-violet)"></path>
+            <path d="M0 15 C15 15, 30 15, 45 15 C60 15, 75 15, 90 15 C95 15, 100 15, 100 15" fill="none"
+              stroke="var(--color-violet)" stroke-width="1.5" stroke-linecap="round"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Workspace Section -->
+    <div class="dashboard-body">
+      <!-- Left Column: Transactions -->
+      <div class="panel">
+        <div class="panel-title-container">
+          <h2 class="panel-title">Recent Transactions</h2>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 45%;">Service / Client</th>
+                <th style="width: 20%;">Reference</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody id="transaction-rows">
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Consulting Fee (US Client)</td>
+                <td><span class="ref-code">#TXN-0938</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 1,200.00</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Software Subscription</td>
+                <td><span class="ref-code">#TXN-0937</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 49.99</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Local Freelance Project</td>
+                <td><span class="ref-code">#TXN-0936</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 45,500</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Domain Registration</td>
+                <td><span class="ref-code">#TXN-0935</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 1,500</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Amazon Web Services</td>
+                <td><span class="ref-code">#TXN-0934</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 124.50</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">Server Hosting</td>
+                <td><span class="ref-code">#TXN-0933</span></td>
+                <td><span class="status-badge badge-completed">Completed</span></td>
+                <td class="amount-text">$ 8,200</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right Column: Sandbox Controls & Sensitive Credentials -->
+      <div class="sandbox-sec">
+        <!-- Developer Sandbox Controls Panel -->
+        <div class="panel">
+          <div class="sandbox-header-glow">
+            <span class="sandbox-icon">⚙️</span>
+            <h3 class="sandbox-title">Simulator Controls</h3>
+          </div>
+
+          <div class="form-group">
+            <label for="txt-notes">Protected Notes Input (Exempt from blur)</label>
+            <div class="input-wrapper">
+              <input type="text" value="Received payment of $1,200.00 today" id="txt-notes"
+                placeholder="Enter notes...">
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-bottom: 16px;">
+            <button onclick="alert('Metadata saved in local cache successfully.')">Save Notes (No-op)</button>
+          </div>
+
+          <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <label style="margin-bottom: 12px; display: block;">Dynamic Actions Simulator</label>
+            <div class="btn-row">
+              <button class="secondary" onclick="addTransaction()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Transaction
+              </button>
+              <button class="secondary" onclick="updateFirstTransactionPrice()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"></path>
+                </svg>
+                Update Price
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sensitive Credentials Simulator (Tests secret scanning) -->
+        <div class="credential-card">
+          <div class="credential-header">
+            <span>🚨</span> Sensitive Data (To protect)
+          </div>
+          <div class="credential-item">
+            <span>Secret Key:</span> sk_live_8273hjs92k0184ns
+          </div>
+          <div class="credential-item">
+            <span>DB URI:</span> postgresql://admin:p@ssw0rd1@db.host.io:5432/production
+          </div>
+          <div class="credential-item">
+            <span>Admin Email:</span> security-audit@innovate.io
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Test Dynamic Insertion
+    function addTransaction() {
+      const tbody = document.getElementById('transaction-rows');
+      const tr = document.createElement('tr');
+
+      const descriptions = [
+        'GitHub Copilot Business',
+        'Vercel Premium Team Plan',
+        'Figma Design Professional',
+        'Slack Enterprise Grid'
+      ];
+      const currencies = [
+        '$19.00',
+        '$20.00',
+        '$ 5,600',
+        '$ 3,500'
+      ];
+
+      const randomDesc = descriptions[Math.floor(Math.random() * descriptions.length)];
+      const randomPrice = currencies[Math.floor(Math.random() * currencies.length)];
+      const randomRef = '#TXN-' + Math.floor(1000 + Math.random() * 9000);
+
+      tr.innerHTML = `
+        <td style="font-weight: 500; color: var(--text-primary);">${randomDesc}</td>
+        <td><span class="ref-code">${randomRef}</span></td>
+        <td><span class="status-badge badge-completed">Completed</span></td>
+        <td class="amount-text">${randomPrice}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Test Dynamic Character Modification
+    function updateFirstTransactionPrice() {
+      const tbody = document.getElementById('transaction-rows');
+      if (tbody && tbody.firstElementChild) {
+        const amountTd = tbody.firstElementChild.querySelector('.amount-text');
+        if (amountTd) {
+          // Toggle between two prices to test text modifications
+          if (amountTd.textContent === '$1,200.00' || amountTd.textContent.includes('1,200')) {
+            amountTd.textContent = '$2,450.75';
+          } else {
+            amountTd.textContent = '$1,200.00';
+          }
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>

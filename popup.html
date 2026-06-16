@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Shield Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Glowing background effects -->
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <!-- Header Section -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-container">
+          <svg class="logo-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M12 8v8M9 11h6" class="inner-cross"/>
+          </svg>
+          <div class="logo-pulse"></div>
+        </div>
+        <div class="brand-text">
+          <h1>Privacy Shield</h1>
+          <span class="version">v1.0.0</span>
+        </div>
+      </div>
+      <div class="status-indicator">
+        <span class="status-dot"></span>
+        <span class="status-label" id="status-label">Active</span>
+      </div>
+    </header>
+
+    <!-- Main Content Panel (Scrollable inside) -->
+    <main class="content-panel">
+      
+      <!-- Tab 1: Shield Controls -->
+      <section id="tab-shield" class="tab-content active">
+        <!-- Big Glass Power Switch Card -->
+        <div class="glass-card power-card">
+          <div class="power-details">
+            <h2>Shield Protection</h2>
+            <p id="power-desc">Blurs sensitive amounts and balances on this page.</p>
+          </div>
+          <label class="switch-glow">
+            <input type="checkbox" id="btn-toggle-enable" checked>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+
+        <!-- Blur Intensity Slider Card -->
+        <div class="glass-card settings-card">
+          <div class="setting-row">
+            <div class="setting-info">
+              <h3>Blur Intensity</h3>
+              <p>Adjust the strength of the blur filter.</p>
+            </div>
+            <span class="badge-value" id="blur-val">8px</span>
+          </div>
+          <div class="slider-wrapper">
+            <span class="slider-limit">2px</span>
+            <input type="range" id="input-blur-intensity" min="2" max="24" value="8" step="1">
+            <span class="slider-limit">24px</span>
+          </div>
+        </div>
+
+        <!-- Hover Reveal Toggle Card -->
+        <div class="glass-card settings-card flex-row">
+          <div class="setting-info">
+            <h3>Reveal on Hover</h3>
+            <p>Temporarily unblurs value on mouse hover.</p>
+          </div>
+          <label class="switch-glow mini">
+            <input type="checkbox" id="btn-toggle-hover" checked>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+
+        <!-- Exclude Domain Card -->
+        <div class="glass-card settings-card flex-row border-card" id="card-current-site">
+          <div class="setting-info">
+            <h3>Enable on this Website</h3>
+            <p class="truncate" id="text-current-domain">currentsite.com</p>
+          </div>
+          <label class="switch-glow mini toggle-danger">
+            <input type="checkbox" id="btn-toggle-domain" checked>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Tab 2: Custom CSS Selectors -->
+      <section id="tab-selectors" class="tab-content">
+        <div class="section-title">
+          <h2>Site Specific Selectors</h2>
+          <p>Add custom CSS selectors to immediately blur specific dashboard components before they render.</p>
+        </div>
+
+        <button class="btn-primary" id="btn-inspect-element" style="width: 100%; margin-bottom: 12px; height: 36px; gap: 8px; justify-content: center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 15px; height: 15px;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="22" y1="12" x2="18" y2="12"></line>
+            <line x1="6" y1="12" x2="2" y2="12"></line>
+            <line x1="12" y1="6" x2="12" y2="2"></line>
+            <line x1="12" y1="22" x2="12" y2="18"></line>
+          </svg>
+          Select Element on Page
+        </button>
+
+        <div class="glass-card add-selector-card">
+          <div class="domain-header">
+            <span class="domain-tag" id="label-current-host">github.com</span>
+            <span class="domain-hint">Target this domain</span>
+          </div>
+          <div class="input-group">
+            <input type="text" id="input-new-selector" placeholder="e.g. [data-testid='balance'] or .amount">
+            <button class="btn-primary" id="btn-add-selector">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="icon-add">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="selectors-list-container">
+          <div class="list-title">Active selectors for this domain</div>
+          <div id="selectors-list" class="selectors-list">
+            <!-- Dynamically populated -->
+            <div class="empty-state">No custom selectors added for this site yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 3: Currencies & Regex -->
+      <section id="tab-currencies" class="tab-content">
+        <div class="section-title">
+          <h2>Currency Filters</h2>
+          <p>Toggle default currency symbols or write custom scan patterns.</p>
+        </div>
+
+        <!-- Currency Chips -->
+        <div class="glass-card currency-card">
+          <h3>Detected Currencies</h3>
+          <div class="currency-chips" id="currency-chips-grid">
+            <!-- Chips dynamically loaded -->
+          </div>
+        </div>
+
+        <!-- Custom Regex Configuration -->
+        <div class="glass-card regex-card">
+          <div class="regex-header">
+            <h3>Custom Regular Expression</h3>
+            <label class="switch-glow mini" id="toggle-regex-wrapper">
+              <input type="checkbox" id="btn-enable-regex">
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          <p class="description">Overrides currency chips. Warning: advanced users only.</p>
+          <div class="textarea-wrapper">
+            <textarea id="textarea-regex" placeholder="e.g. \b(balance|total|salary)\b" disabled></textarea>
+            <span class="regex-status" id="regex-validation-status">Regex disabled</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 4: All Exclusions -->
+      <section id="tab-exclusions" class="tab-content">
+        <div class="section-title">
+          <h2>Whitelisted Domains</h2>
+          <p>Management list of domains where the Privacy Shield is completely suspended.</p>
+        </div>
+
+        <div class="glass-card add-exclusion-card">
+          <div class="input-group">
+            <input type="text" id="input-new-exclusion" placeholder="e.g. paypal.com or bank.com">
+            <button class="btn-primary" id="btn-add-exclusion">Add Domain</button>
+          </div>
+        </div>
+
+        <div class="exclusions-list-container">
+          <div id="exclusions-list" class="exclusions-list">
+            <!-- Dynamically populated -->
+            <div class="empty-state">No websites are whitelisted. Protection is active everywhere.</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="app-nav">
+      <button class="nav-item active" data-target="tab-shield">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>Shield</span>
+      </button>
+      <button class="nav-item" data-target="tab-selectors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="21" y1="9" x2="3" y2="9"/>
+          <line x1="9" y1="21" x2="9" y2="9"/>
+        </svg>
+        <span>Selectors</span>
+      </button>
+      <button class="nav-item" data-target="tab-currencies">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <span>Currencies</span>
+      </button>
+      <button class="nav-item" data-target="tab-exclusions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14h-2v-2h2zm0-4h-2V7h2z"/>
+        </svg>
+        <span>Whitelist</span>
+      </button>
+    </nav>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
