@@ -584,7 +584,7 @@
       });
 
       if (classes.length > 0) {
-        part += '.' + classes[0];
+        part += '.' + CSS.escape(classes[0]);
       }
 
       // Compute index among sibling tags
@@ -612,6 +612,17 @@
       }
 
       path.unshift(part);
+
+      // Check if the selector generated so far uniquely identifies the element
+      const selector = path.join(' > ');
+      try {
+        if (document.querySelectorAll(selector).length === 1) {
+          break;
+        }
+      } catch (e) {
+        // Suppress errors due to temporary selector formatting
+      }
+
       current = current.parentElement;
     }
 
