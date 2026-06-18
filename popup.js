@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currencies: ["$", "€", "£", "Rs", "PKR", "₹", "¥"],
     customRegex: "",
     customSelectors: {},
-    excludedSites: []
+    excludedSites: [],
+    tabCloakingEnabled: false
   };
 
   const DEFAULT_CURRENCIES = ["$", "€", "£", "¥", "Rs", "PKR", "₹", "USD", "EUR", "GBP"];
@@ -21,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const inputBlurIntensity = document.getElementById("input-blur-intensity");
   const blurVal = document.getElementById("blur-val");
   const btnToggleHover = document.getElementById("btn-toggle-hover");
+  const btnToggleCloaking = document.getElementById("btn-toggle-cloaking");
   
   const cardCurrentSite = document.getElementById("card-current-site");
   const textCurrentDomain = document.getElementById("text-current-domain");
@@ -106,6 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     inputBlurIntensity.value = settings.blurIntensity;
     blurVal.textContent = `${settings.blurIntensity}px`;
     btnToggleHover.checked = settings.revealOnHover;
+    btnToggleCloaking.checked = !!settings.tabCloakingEnabled;
 
     updateHeaderStatus(settings.enabled);
 
@@ -212,24 +215,101 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    hostSelectors.forEach((selector, idx) => {
-      const item = document.createElement("div");
-      item.className = "list-item";
+    hostSelectors.forEach((item, idx) => {
+      // Backward compatibility: handle if item is just a string
+      const isObj = item && typeof item === 'object';
+      const selectorStr = isObj ? item.selector : item;
+      const labelStr = isObj ? item.label : `Selector ${idx + 1}`;
+      const isEnabled = isObj ? (item.enabled !== false) : true;
 
-      const text = document.createElement("span");
-      text.className = "item-text";
-      text.textContent = selector;
-      text.title = selector;
+      const li = document.createElement("div");
+      li.className = `selector-item ${!isEnabled ? "disabled-selector-item" : ""}`;
 
+      // Left column: Info (Name & Selector Code)
+      const meta = document.createElement("div");
+      meta.className = "selector-meta";
+
+      const nameRow = document.createElement("div");
+      nameRow.className = "selector-name-row";
+
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "selector-name";
+      nameSpan.textContent = labelStr;
+      nameSpan.title = labelStr;
+      nameRow.appendChild(nameSpan);
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "btn-edit-label";
+      editBtn.title = "Rename reference";
+      editBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 10px; height: 10px;">
+          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      `;
+      editBtn.addEventListener("click", () => {
+        const newName = prompt("Enter new reference name for this selector:", labelStr);
+        if (newName !== null && newName.trim() !== "") {
+          if (typeof hostSelectors[idx] === 'string') {
+            hostSelectors[idx] = { selector: selectorStr, label: newName.trim(), enabled: isEnabled };
+          } else {
+            hostSelectors[idx].label = newName.trim();
+          }
+          chrome.storage.local.set({ customSelectors: settings.customSelectors }, () => {
+            renderSelectorsList();
+          });
+        }
+      });
+      nameRow.appendChild(editBtn);
+      meta.appendChild(nameRow);
+
+      const codeSpan = document.createElement("span");
+      codeSpan.className = "selector-code";
+      codeSpan.textContent = selectorStr;
+      codeSpan.title = selectorStr;
+      meta.appendChild(codeSpan);
+
+      li.appendChild(meta);
+
+      // Right column: Actions (Toggle & Delete)
+      const actions = document.createElement("div");
+      actions.className = "selector-actions";
+
+      // Enable/Disable switch
+      const toggleLabel = document.createElement("label");
+      toggleLabel.className = "switch-glow mini";
+      
+      const toggleInput = document.createElement("input");
+      toggleInput.type = "checkbox";
+      toggleInput.checked = isEnabled;
+      toggleInput.addEventListener("change", (e) => {
+        const checked = e.target.checked;
+        if (typeof hostSelectors[idx] === 'string') {
+          hostSelectors[idx] = { selector: selectorStr, label: labelStr, enabled: checked };
+        } else {
+          hostSelectors[idx].enabled = checked;
+        }
+        chrome.storage.local.set({ customSelectors: settings.customSelectors }, () => {
+          renderSelectorsList();
+        });
+      });
+
+      const toggleSlider = document.createElement("span");
+      toggleSlider.className = "slider-switch";
+
+      toggleLabel.appendChild(toggleInput);
+      toggleLabel.appendChild(toggleSlider);
+      actions.appendChild(toggleLabel);
+
+      // Delete Button
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "btn-delete";
+      deleteBtn.title = "Delete selector";
       deleteBtn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="3 6 5 6 21 6"></polyline>
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
         </svg>
       `;
-
       deleteBtn.addEventListener("click", () => {
         const updatedList = [...hostSelectors];
         updatedList.splice(idx, 1);
@@ -244,10 +324,10 @@ document.addEventListener("DOMContentLoaded", () => {
           renderSelectorsList();
         });
       });
+      actions.appendChild(deleteBtn);
 
-      item.appendChild(text);
-      item.appendChild(deleteBtn);
-      selectorsList.appendChild(item);
+      li.appendChild(actions);
+      selectorsList.appendChild(li);
     });
   }
 
@@ -341,6 +421,12 @@ document.addEventListener("DOMContentLoaded", () => {
       chrome.storage.local.set({ revealOnHover: val });
     });
 
+    // Tab Cloaking toggle
+    btnToggleCloaking.addEventListener("change", (e) => {
+      const val = e.target.checked;
+      chrome.storage.local.set({ tabCloakingEnabled: val });
+    });
+
     // Toggle current website protection
     if (currentHost) {
       btnToggleDomain.addEventListener("change", (e) => {
@@ -369,14 +455,28 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!val) return;
 
         const hostSelectors = settings.customSelectors[currentHost] || [];
-        if (!hostSelectors.includes(val)) {
-          hostSelectors.push(val);
+        const exists = hostSelectors.some(item => {
+          const itemSelector = (item && typeof item === 'object') ? item.selector : item;
+          return itemSelector === val;
+        });
+
+        if (!exists) {
+          const defaultLabel = `Selector ${hostSelectors.length + 1}`;
+          const label = prompt("Enter a short reference name for this selector:", defaultLabel) || defaultLabel;
+
+          hostSelectors.push({
+            selector: val,
+            label: label.trim(),
+            enabled: true
+          });
           settings.customSelectors[currentHost] = hostSelectors;
           
           chrome.storage.local.set({ customSelectors: settings.customSelectors }, () => {
             inputNewSelector.value = "";
             renderSelectorsList();
           });
+        } else {
+          alert("This selector is already added.");
         }
       };
 

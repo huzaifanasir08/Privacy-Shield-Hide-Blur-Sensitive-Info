@@ -8,7 +8,8 @@
     currencies: ["$", "€", "£", "Rs", "PKR", "₹", "¥"],
     customRegex: "",
     customSelectors: {},
-    excludedSites: []
+    excludedSites: [],
+    tabCloakingEnabled: false
   };
 
   let amountRegex = null;
@@ -23,6 +24,11 @@
   let inspectorOverlay = null;
   let inspectorTooltip = null;
   let currentHoveredElement = null;
+
+  // Tab cloaking variables
+  let originalTitle = "";
+  let originalFavicons = [];
+  let cloakingObserver = null;
 
   // Initialize
   function init() {
@@ -45,6 +51,7 @@
       applyGlobalStyles();
       compileRegex();
       injectCustomSelectorsCSS(currentDomain);
+      applyTabCloaking();
 
       if (settings.enabled) {
         startObserver();
@@ -72,6 +79,9 @@
             needsSelectorsUpdate = true;
             needsReapply = true;
           }
+          if (key === 'tabCloakingEnabled') {
+            needsReapply = true;
+          }
         }
 
         const currentDomain = window.location.hostname.toLowerCase();
@@ -86,6 +96,7 @@
 
         if (needsReapply) {
           applyGlobalStyles();
+          applyTabCloaking();
         }
         if (needsRegexRecompile) {
           compileRegex();
@@ -139,6 +150,147 @@
     }
   }
 
+  // Apply Tab Cloaking (Stealth Mode)
+  function applyTabCloaking() {
+    if (!settings.enabled || !settings.tabCloakingEnabled) {
+      restoreTabCloaking();
+      return;
+    }
+
+    // Capture original title if not already set or it's been changed externally
+    if (document.title !== "Hidden tab") {
+      originalTitle = document.title || "Dashboard";
+    }
+
+    // Force Cloaked title
+    document.title = "Hidden tab";
+
+    // Shield SVG Favicon
+    const shieldFavicon = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2314b8a6"><path d="M12 2s8 3 8 8c0 4.52-2.82 8.79-8 10-5.18-1.21-8-5.48-8-10 0-5 8-8 8-8z" stroke="%23ffffff" stroke-width="2"/></svg>`;
+
+    // Save and replace favicons
+    const links = document.querySelectorAll("link[rel*='icon']");
+    if (originalFavicons.length === 0 && links.length > 0) {
+      links.forEach(link => {
+        originalFavicons.push({
+          element: link,
+          href: link.getAttribute("href"),
+          rel: link.getAttribute("rel")
+        });
+      });
+    }
+
+    if (links.length > 0) {
+      links.forEach(link => {
+        link.setAttribute("href", shieldFavicon);
+      });
+    } else {
+      // Create a favicon element if none exist
+      const link = document.createElement("link");
+      link.rel = "icon";
+      link.type = "image/svg+xml";
+      link.href = shieldFavicon;
+      document.head.appendChild(link);
+    }
+
+    startCloakingObserver(shieldFavicon);
+  }
+
+  // Observer to maintain title and favicon even when dynamic frameworks like Next.js try to revert them
+  function startCloakingObserver(shieldFavicon) {
+    if (cloakingObserver) return;
+
+    cloakingObserver = new MutationObserver((mutations) => {
+      // Temporarily disconnect observer to avoid infinite trigger loop
+      cloakingObserver.disconnect();
+
+      if (document.title !== "Hidden tab") {
+        if (document.title !== "") {
+          originalTitle = document.title;
+        }
+        document.title = "Hidden tab";
+      }
+
+      // Maintain shield favicon
+      const links = document.querySelectorAll("link[rel*='icon']");
+      links.forEach(link => {
+        if (link.getAttribute("href") !== shieldFavicon) {
+          link.setAttribute("href", shieldFavicon);
+        }
+      });
+
+      // Reconnect observer
+      cloakingObserver.observe(document.head || document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["href", "rel"]
+      });
+
+      const titleEl = document.querySelector("title");
+      if (titleEl) {
+        cloakingObserver.observe(titleEl, {
+          characterData: true,
+          childList: true
+        });
+      }
+    });
+
+    cloakingObserver.observe(document.head || document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["href", "rel"]
+    });
+
+    const titleEl = document.querySelector("title");
+    if (titleEl) {
+      cloakingObserver.observe(titleEl, {
+        characterData: true,
+        childList: true
+      });
+    }
+  }
+
+  // Restore normal title and favicon
+  function restoreTabCloaking() {
+    if (cloakingObserver) {
+      cloakingObserver.disconnect();
+      cloakingObserver = null;
+    }
+
+    if (originalTitle && document.title === "Hidden tab") {
+      document.title = originalTitle;
+    }
+
+    const links = document.querySelectorAll("link[rel*='icon']");
+    if (originalFavicons.length > 0) {
+      // Remove newly created favicons
+      links.forEach(link => {
+        const isOrig = originalFavicons.some(orig => orig.element === link);
+        if (!isOrig) {
+          link.remove();
+        }
+      });
+
+      // Restore original hrefs
+      originalFavicons.forEach(orig => {
+        if (orig.element && orig.element.parentNode) {
+          orig.element.setAttribute("href", orig.href);
+        }
+      });
+      originalFavicons = [];
+    } else {
+      // If we didn't save any original favicons, just remove the SVG one we injected
+      links.forEach(link => {
+        const href = link.getAttribute("href") || "";
+        if (href.startsWith("data:image/svg+xml")) {
+          link.remove();
+        }
+      });
+    }
+  }
+
   // Compile regular expression based on currencies list and custom pattern
   function compileRegex() {
     if (settings.customRegex && settings.customRegex.trim() !== '') {
@@ -188,7 +340,14 @@
       if (currentDomain === host || currentDomain.endsWith('.' + host)) {
         const selectors = settings.customSelectors[host];
         if (Array.isArray(selectors)) {
-          matchingSelectors.push(...selectors);
+          selectors.forEach(item => {
+            const isObj = item && typeof item === 'object';
+            const selectorStr = isObj ? item.selector : item;
+            const isEnabled = isObj ? (item.enabled !== false) : true;
+            if (selectorStr && isEnabled) {
+              matchingSelectors.push(selectorStr);
+            }
+          });
         }
       }
     }
@@ -634,12 +793,24 @@
     const currentDomain = window.location.hostname.toLowerCase();
     
     const hostSelectors = settings.customSelectors[currentDomain] || [];
-    if (!hostSelectors.includes(selector)) {
-      hostSelectors.push(selector);
+    const exists = hostSelectors.some(item => {
+      const itemSelector = (item && typeof item === 'object') ? item.selector : item;
+      return itemSelector === selector;
+    });
+
+    if (!exists) {
+      const defaultLabel = `Selector ${hostSelectors.length + 1}`;
+      const label = prompt("Enter a short reference name for this selector:", defaultLabel) || defaultLabel;
+
+      hostSelectors.push({
+        selector: selector,
+        label: label.trim(),
+        enabled: true
+      });
       settings.customSelectors[currentDomain] = hostSelectors;
       
       chrome.storage.local.set({ customSelectors: settings.customSelectors }, () => {
-        showToast(`Element blurred! Added selector: ${selector}`);
+        showToast(`Element blurred! Added selector: ${label.trim()}`);
       });
     } else {
       showToast(`Element is already blurred.`);
